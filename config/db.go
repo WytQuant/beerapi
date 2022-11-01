@@ -1,6 +1,9 @@
 package config
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"komgrip-api/models"
@@ -9,8 +12,14 @@ import (
 )
 
 var db *gorm.DB
+var collection *mongo.Collection
 
-func InitDB() {
+const (
+	DBNAME  = "loggerAPI"
+	COLNAME = "logInfo"
+)
+
+func InitMYSQL() {
 	var err error
 	db, err = gorm.Open(mysql.Open(os.Getenv("DSN")), &gorm.Config{})
 	if err != nil {
@@ -22,6 +31,21 @@ func InitDB() {
 	}
 }
 
-func GetDB() *gorm.DB {
+func GetMYSQL() *gorm.DB {
 	return db
+}
+
+func InitMONGO() {
+	mongoURI := os.Getenv("MONGO_URI")
+	clientOption := options.Client().ApplyURI(mongoURI)
+	client, err := mongo.Connect(context.TODO(), clientOption)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	collection = client.Database(DBNAME).Collection(COLNAME)
+}
+
+func GetMONGO() *mongo.Collection {
+	return collection
 }

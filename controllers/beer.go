@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
@@ -22,6 +23,7 @@ type beersPaging struct {
 }
 
 type beerResponse struct {
+	ID       uint   `json:"id"`
 	Name     string `json:"name"`
 	Category string `json:"category"`
 	Detail   string `json:"detail"`
@@ -103,6 +105,11 @@ func (b *BeerController) Update(c *gin.Context) {
 		return
 	}
 
+	if _, err := strconv.Atoi(c.Param("id")); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error message": "Beer id is not a number"})
+		return
+	}
+
 	beer, err := b.findBeerById(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error message": err.Error()})
@@ -119,25 +126,24 @@ func (b *BeerController) Update(c *gin.Context) {
 
 	b.setBeerImage(c, beer)
 
-	serializedBeer := beerResponse{}
-	copier.Copy(&serializedBeer, beer)
-
 	c.JSON(http.StatusOK, gin.H{
-		"beer information": serializedBeer,
-		"message":          "Update beer information successfully",
+		"message": "Update beer information successfully",
 	})
 }
 
 func (b *BeerController) Delete(c *gin.Context) {
-	beerId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error message": "Beer id is not a number",
-		})
+	if _, err := strconv.Atoi(c.Param("id")); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error message": "Beer id is not a number"})
 		return
 	}
 
-	b.DB.Unscoped().Delete(&models.Beer{}, beerId)
+	beer, err := b.findBeerById(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error message": err.Error()})
+		return
+	}
+
+	b.DB.Unscoped().Delete(&beer)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Deleted successfully",
@@ -148,10 +154,7 @@ func (b *BeerController) findBeerById(c *gin.Context) (*models.Beer, error) {
 	var beer models.Beer
 	beerId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error message": "Beer id is not a number",
-		})
-		return nil, err
+		return nil, errors.New("Beer id is not a number")
 	}
 
 	if err := b.DB.First(&beer, beerId).Error; err != nil {

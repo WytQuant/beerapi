@@ -1,0 +1,3 @@
+HOST=http://localhost:4000
+DSN=user:Password@tcp(localhost:3306)/dbname?charset=utf8mb4&parseTime=True
+MONGO_URI=<ATLAS_URI_HERE>

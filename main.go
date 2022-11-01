@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"komgrip-api/config"
-	"komgrip-api/controllers"
+	"komgrip-api/routes"
 	"log"
 	"os"
 )
@@ -15,8 +15,8 @@ func main() {
 	}
 
 	// connect to database
-	config.InitDB()
-	db := config.GetDB()
+	config.InitMYSQL()
+	config.InitMONGO()
 
 	// Create server
 	server := gin.Default()
@@ -28,14 +28,7 @@ func main() {
 		os.MkdirAll("uploads/"+dir, 0755)
 	}
 
-	beerController := controllers.BeerController{DB: db}
-	beerGroup := server.Group("/api/v1")
-	{
-		beerGroup.GET("/beer", beerController.GetAll)
-		beerGroup.POST("/beer", beerController.Create)
-		beerGroup.PUT("beer/:id", beerController.Update)
-		beerGroup.DELETE("/beer/:id", beerController.Delete)
-	}
+	routes.Serve(server)
 
 	port := "4000"
 
