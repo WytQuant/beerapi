@@ -94,7 +94,7 @@ func (b *BeerController) Create(c *gin.Context) {
 	copier.Copy(&serializedBeer, &beer)
 
 	c.JSON(http.StatusCreated, gin.H{
-		"beer information": serializedBeer,
+		"created beer information": serializedBeer,
 	})
 }
 
@@ -125,9 +125,11 @@ func (b *BeerController) Update(c *gin.Context) {
 	}
 
 	b.setBeerImage(c, beer)
+	var serializedBeer beerResponse
+	copier.Copy(&serializedBeer, beer)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Update beer information successfully",
+		"updated beer information": serializedBeer,
 	})
 }
 
