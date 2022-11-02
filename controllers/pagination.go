@@ -24,12 +24,12 @@ type pagination struct {
 
 func (p *pagination) paginate() *pagingResult {
 	page, _ := strconv.Atoi(p.ctx.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(p.ctx.DefaultQuery("limit", "12"))
+	limit, _ := strconv.Atoi(p.ctx.DefaultQuery("limit", "10"))
 
 	var count int64
 	p.query.Model(p.records).Count(&count)
 
-	offset := (page - 1) * 10
+	offset := (page - 1) * limit
 	p.query.Limit(limit).Offset(offset).Find(p.records)
 
 	totalPage := int(math.Ceil(float64(count) / float64(limit)))
